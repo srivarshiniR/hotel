@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const JWT_Secretkey = "thisistoken";
 const roomsRoute = require("./router/roomsRoute");
 const { json } = require("body-parser");
+
 app.use(cors());
 
 app.use(express.json());
@@ -15,11 +16,14 @@ app.use("/api/room", roomsRoute);
 require("./db");
 
 //import schemas
+
 require("./model/user");
 require("./model/room");
+require("./model/roomtype");
 
 const User = mongoose.model("user");
 const Room = mongoose.model("room");
+const Roomtype = mongoose.model("roomtype");
 
 const port = 5005;
 app.use(bodyParser.json());
@@ -50,11 +54,6 @@ app.post("/register", async (req, res) => {
     res.json({ status: "error" });
   }
 });
-
-// app.get("/register",async(req,res)=>{
-//     console.log("enters")
-//     res.send({status:"ok"})
-// })
 
 //post Api for login
 
@@ -106,13 +105,13 @@ app.post("/userData", async (req, res) => {
   } catch (error) {}
 });
 
-//poat Api for rooms
+//post Api for rooms
 
 app.post("/room", async (req, res) => {
   console.log("enter value");
   try {
     console.log("start");
-    const { name, maxcount, rent, type,destination,imgurl } = req.body;
+    const { name, maxcount, rent, type, destination, imgurl } = req.body;
     const newroom = await Room.create({
       name,
       maxcount,
@@ -128,9 +127,47 @@ app.post("/room", async (req, res) => {
     console.log("err", err);
   }
 });
+
 app.get("/room", async (req, res) => {
   console.log("enters");
   res.send({ status: "ok" });
+});
+
+//post room_type
+
+app.post("/roomtype", async (req, res) => {
+  console.log("enter value");
+  try {
+    console.log("start");
+    const { hotel_id, max_member, rent, type, bed } = req.body;
+    const newroom = await Roomtype.create({
+      hotel_id,
+      max_member,
+      rent,
+      type,
+      bed,
+    });
+
+    console.log({ status: "ok" });
+    res.send({ status: "ok", data: newroom });
+  } catch (err) {
+    console.log("err", err);
+  }
+});
+
+//put api
+
+app.put("/:id", async (req, res) => {
+  try {
+    const id = req.params.id;
+    const detail = await Roomtype.findByIdAndUpdate(id, req.body, {
+      new: true,
+    });
+
+    res.send(detail);
+  } catch (e) {
+    res.status(400).send(e);
+  }
 });
 
 app.listen(port, () => console.log("server started @" + port));
